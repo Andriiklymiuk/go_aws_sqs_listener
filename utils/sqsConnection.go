@@ -29,6 +29,8 @@ func (c *SqsConnection) PollMessages() {
 
 		if err != nil {
 			fmt.Printf("failed to fetch sqs message %s\n", err)
+		} else {
+			fmt.Println(GreenColor, "aws sqs connection is ok", WhiteColor)
 		}
 
 		for _, message := range output.Messages {

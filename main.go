@@ -59,6 +59,8 @@ func main() {
 	if err != nil {
 		fmt.Println("error pinging the database", err)
 		return
+	} else {
+		fmt.Println(utils.GreenColor, "postgres db connection is ok", utils.WhiteColor)
 	}
 
 	server := &http.Server{Addr: fmt.Sprintf(":%d", envConfig.ServerPort)}
