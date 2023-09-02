@@ -32,6 +32,18 @@ type QueueMessage struct {
 	Data MessageData `json:"data"`
 }
 
+func pingDatabaseUntilConnected(db *sql.DB, maxRetries int, retryInterval time.Duration) error {
+	for i := 0; i < maxRetries; i++ {
+		err := db.Ping()
+		if err == nil {
+			return nil
+		}
+		fmt.Printf(utils.RedColor, "Error pinging the database: %s. Retrying in %s...\n", err, retryInterval, utils.WhiteColor)
+		time.Sleep(retryInterval)
+	}
+	return fmt.Errorf("exceeded maximum number of retries")
+}
+
 func main() {
 	envConfig, err := utils.LoadConnectionConfig()
 	if err != nil {
@@ -54,22 +66,21 @@ func main() {
 
 	defer db.Close()
 
-	// Check database connectivity
-	err = db.Ping()
+	err = pingDatabaseUntilConnected(db, 10, 1*time.Second)
 	if err != nil {
-		fmt.Println("error pinging the database", err)
+		fmt.Println(err, "Pinging postgres db failed: ", err.Error())
 		return
-	} else {
-		fmt.Println(utils.GreenColor, "postgres db connection is ok", utils.WhiteColor)
 	}
 
+	fmt.Println(utils.GreenColor, "postgres db connection is ok", utils.WhiteColor)
+
 	server := &http.Server{Addr: fmt.Sprintf(":%d", envConfig.ServerPort)}
-	http.HandleFunc("/status", func(w http.ResponseWriter, req *http.Request) {
+	http.HandleFunc("/status", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Success"))
 	})
 
-	http.HandleFunc("/version", func(w http.ResponseWriter, req *http.Request) {
+	http.HandleFunc("/version", func(w http.ResponseWriter, _ *http.Request) {
 		type versionInfo struct {
 			Version string `json:"version"`
 		}
