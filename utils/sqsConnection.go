@@ -30,7 +30,7 @@ func (c *SqsConnection) PollMessages() {
 		if err != nil {
 			fmt.Printf("failed to fetch sqs message %s\n", err)
 		} else {
-			fmt.Println(BlueColor, "waiting for sqs messages", WhiteColor)
+			fmt.Println(BlueColor, "Go server is waiting for sqs messages", WhiteColor)
 		}
 
 		for _, message := range output.Messages {
